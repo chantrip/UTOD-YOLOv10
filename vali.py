@@ -43,6 +43,8 @@ def main():
     parser.add_argument("--batch", type=int, default=32)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--device", type=int, default=0)
+    parser.add_argument("--split", choices=("val", "test"), default="val",
+                        help="Explicit evaluation partition; do not label val as final test")
 
     args = parser.parse_args()
 
@@ -60,6 +62,7 @@ def main():
     print(f"YAML        = {YAML_PATH}")
     print(f"Weights     = {args.weights}")
     print(f"Run name    = {args.name}")
+    print(f"Eval split  = {args.split}")
 
     # ---------------------------------------------------------
     # Seed
@@ -84,9 +87,9 @@ def main():
         imgsz=args.imgsz,
         batch=args.batch,
         device=args.device,
-        split="val",        # IMPORTANT: ensures val split
+        split=args.split,    # Explicit validation or held-out test partition
         plots=False,
-        save_json=True,      # saves COCO-style JSON → size metrics guaranteed
+        save_json=True,      # JSON predictions alone do NOT calculate size-specific AP
         name=args.name
     )
 
@@ -99,12 +102,13 @@ def main():
     print(f"mAP@0.5      : {metrics.box.map50:.4f}")
     print(f"mAP@0.5:0.95 : {metrics.box.map:.4f}")
 
-    # Size-based AP (this is what you want)
+    # Ultralytics .maps is indexed by CLASS, not COCO box-area category.
     if hasattr(metrics.box, "maps"):
-        print("\n=== Size-based AP ===")
-        print(f"AP_small  : {metrics.box.maps[0]:.4f}")
-        print(f"AP_medium : {metrics.box.maps[1]:.4f}")
-        print(f"AP_large  : {metrics.box.maps[2]:.4f}")
+        print("\n=== Per-class AP@0.5:0.95 (NOT AP by object size) ===")
+        names = metrics.names
+        for class_id, value in enumerate(metrics.box.maps):
+            label = names.get(class_id, str(class_id)) if isinstance(names, dict) else names[class_id]
+            print(f"AP_class[{class_id}] {label}: {float(value):.4f}")
 
 if __name__ == "__main__":
     main()
