@@ -36,8 +36,8 @@ def test_single_site_dc2f_ablation():
 def test_weighted_concats_match_final_locations():
     base = model("yolov10n.yaml")
     weighted_cat = model("yolov10nBi.yaml")
-    assert changes(base, weighted_cat) == {"backbone": [], "head": [4, 8, 12]}
-    assert [weighted_cat["head"][i][2] for i in (4, 8, 12)] == ["BiFPN"] * 3
+    assert changes(base, weighted_cat) == {"backbone": [], "head": [4, 7, 10]}
+    assert [weighted_cat["head"][i][2] for i in (4, 7, 10)] == ["BiFPN"] * 3
 
 
 def test_final_is_exact_factor_combination():
@@ -45,9 +45,9 @@ def test_final_is_exact_factor_combination():
     p5_only = model("yolov10nP5DCN.yaml")
     weighted_cat = model("yolov10nBi.yaml")
     final = model("yolov10n-dwb.yaml")
-    assert changes(p5_only, final) == {"backbone": [], "head": [4, 8, 12]}
+    assert changes(p5_only, final) == {"backbone": [], "head": [4, 7, 10]}
     assert changes(weighted_cat, final) == {"backbone": [8], "head": []}
-    assert changes(base, final) == {"backbone": [8], "head": [4, 8, 12]}
+    assert changes(base, final) == {"backbone": [8], "head": [4, 7, 10]}
 
 
 def test_prior_four_stage_dcn_is_not_p5_only():
