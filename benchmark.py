@@ -55,5 +55,7 @@ p95_latency = np.percentile(latencies, 95)
 total_time = latencies.sum() / 1000  # seconds
 fps = ITER / total_time
 
+print("Benchmark scope: synthetic input, batch=1, GPU model-forward only; excludes image loading, decoding, preprocessing, output handling and robot integration.")
+print(f"Image size: {IMGSZ}x{IMGSZ}; device: {DEVICE}; warmup: {WARMUP}; iterations: {ITER}.")
 print(f"Latency (ms): mean={mean_latency:.2f}, std={std_latency:.2f}, p95={p95_latency:.2f}")
 print(f"FPS: {fps:.2f}")
