@@ -145,7 +145,8 @@ def bbox_iou(box1, box2, xywh=True, GIoU=False, DIoU=False, CIoU=False, WIoU=Fal
     # Union Area
     union = w1 * h1 + w2 * h2 - inter + eps
 
-    if scale:
+    # CIoU/DIoU/GIoU evaluation must not update WIoU's global running mean.
+    if WIoU and scale:
         self = WIoU_Scale(1 - (inter / union))
 
     # IoU
