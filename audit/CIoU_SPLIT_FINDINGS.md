@@ -102,3 +102,14 @@ All three checks passed in the local test environment. **No real dataset counts,
 Accordingly, the checked-in pure-DCNv4 ablation is **not a same-placement single-factor toggle** relative to the final design, unless another untracked architecture/configuration was used for the paper. The configuration for the DCNv4-only ablation and the configured DCNv4 component of the final model are different interventions, so component-effect attribution requires precise architecture mapping.
 
 These architecture differences are independent from, and **do not repair**, the global WIoU/CIoU separation problem described above.
+
+
+## Additional Git tree artifact sweep (independent of the student)
+
+A recursive read of the original fork's `main` tree located no student-specific `best.pt`, `last.pt`, `args.yaml`, final `results.csv`, dataset-image manifest, or cross-seed summary files in the checked-in source.
+
+- The repository does contain `logs/yolov10{n,s,m,b,l,x}.csv`, but `logs/yolov10n.csv` has the **same blob SHA** (`3de536602c076b99ae8bc92a680ad95552734a74`) at the 2025-09-26 checkout commit `f7e794f1ff` and the current main. It is an inherited original YOLOv10 upstream log, **not evidence of these final underwater experimental baselines**.
+- The root `test.ipynb` contains an early Windows-side TrashCan-Material exploratory run configured for 100 epochs, automatic batch size, and an RTX 4060 Laptop GPU. Its saved stdout is truncated during epoch 5/100. It cannot establish the claimed final 200-epoch baseline or final selected checkpoint, and the environment differs from the reported HPC GPU.
+- Historical CIoU code existed, but the repository does not pair any particular paper table row with an immutable training-code commit and checkpoint.
+
+**Inference:** No recoverable committed original run artifact closes the CIoU baseline provenance gap or establishes independent RUOD/DUO test evaluation. This does **not** rule out untracked files on the original HPC or external tracking systems.
