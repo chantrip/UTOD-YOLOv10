@@ -92,3 +92,13 @@ All three checks passed in the local test environment. **No real dataset counts,
 - There is **not enough evidence to assert that the historical reported accuracy numbers are false**; old code, local patches, unpublished run settings, or differently defined file partitions remain possible.
 - No actual benchmark re-evaluation is possible from this repository alone because the required datasets and model checkpoints are not included.
 
+
+
+## Related ablation isolation issue found during follow-up inspection
+
+- `trash_m_dcn.py` uses `yolov10nDCN.yaml` whose backbone substitutes **DC2f in four blocks** (P2, P3, P4 and P5): [model YAML](https://github.com/chantrip/UTOD-YOLOv10/blob/cvc-audit/ultralytics/cfg/models/v10/yolov10nDCN.yaml).
+- The **final model** `yolov10n-dwb.yaml` uses DC2f **only in the final P5 block**: [final model YAML](https://github.com/chantrip/UTOD-YOLOv10/blob/cvc-audit/ultralytics/cfg/models/v10/yolov10n-dwb.yaml).
+
+Accordingly, the checked-in pure-DCNv4 ablation is **not a same-placement single-factor toggle** relative to the final design, unless another untracked architecture/configuration was used for the paper. The configuration for the DCNv4-only ablation and the configured DCNv4 component of the final model are different interventions, so component-effect attribution requires precise architecture mapping.
+
+These architecture differences are independent from, and **do not repair**, the global WIoU/CIoU separation problem described above.
