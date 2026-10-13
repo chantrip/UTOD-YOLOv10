@@ -58,10 +58,16 @@ Requires `PyYAML`. For regression tests, install `pytest` and a compatible CPU b
 5. Run data-free unit tests:
 
    ```bash
-   python -m pytest -q audit/tests/test_loss_selection.py audit/tests/test_prepare_dev_split.py
+   python -m pytest -q audit/tests/test_loss_selection.py audit/tests/test_prepare_dev_split.py audit/tests/test_architecture_factors.py
    ```
 
    The regression-loss tests AST-load the actual source classes/functions without importing the entire Ultralytics package/DCNv4 CUDA extension. They check criterion selection for both YOLOv10 branches, numeric behavior, and that CIoU does not update WIoU running statistics. The partition tests use synthetic tiny image files to test deterministic generation, grouped sequences, and overlap checks. **These unit tests are not substitutes for a GPU end-to-end validation run.**
+
+## Matched factorial ablations
+
+See [EXPERIMENT_MATRIX.md](EXPERIMENT_MATRIX.md) for eight controlled configurations using four YAMLs and the explicit loss selector. The new `yolov10nP5DCN.yaml` changes **only the final backbone stage**, unlike the original four-stage DCN ablation. This is a protocol for future reruns, not newly measured accuracy.
+
+To evaluate an untouched final partition, use `python vali.py --ds ruod --weights /path/to/best.pt --name ruod_final_test --split test` **with a dataset YAML that explicitly contains test:**. The stock `data/ruod.yaml` does not have a `test:` entry; use the generated `data_audit.yaml` and adjust the evaluation script's YAML mapping or use the corresponding dataset CLI wrapper before attempting a test run. Results from `split=val` remain model-selection metrics.
 
 ## Commit-level change log
 
