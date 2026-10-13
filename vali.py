@@ -1,5 +1,8 @@
 import argparse
 import os
+from pathlib import Path
+
+import yaml
 import random
 import numpy as np
 import torch
@@ -59,6 +62,11 @@ def main():
         YAML_PATH = DATASETS[args.ds]["yaml"]
     else:
         parser.error("Provide --data DATA_YAML or a valid --ds dataset shortcode")
+
+    # Fail closed: never silently evaluate val data under a claimed test label.
+    dataset_config = yaml.safe_load(Path(YAML_PATH).read_text(encoding="utf-8"))
+    if not isinstance(dataset_config, dict) or not dataset_config.get(args.split):
+        parser.error(f"Evaluation split {args.split!r} is not configured in {YAML_PATH}")
 
     print(f"Using dataset '{args.ds if args.ds else 'custom YAML'}'")
     print(f"YAML        = {YAML_PATH}")
