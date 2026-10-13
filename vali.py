@@ -33,8 +33,10 @@ DATASETS = {
 def main():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--ds", type=str, required=True,
+    parser.add_argument("--ds", type=str,
                         help="Dataset shortcode: tci, tcm, ruod, duo, uodd")
+    parser.add_argument("--data", type=str,
+                        help="Direct YAML path for audited generated train/val/test splits (overrides --ds)")
     parser.add_argument("--weights", type=str, required=True,
                         help="Path to trained .pt weights (best.pt)")
     parser.add_argument("--name", type=str, required=True,
@@ -51,14 +53,14 @@ def main():
     # ---------------------------------------------------------
     # Resolve dataset paths
     # ---------------------------------------------------------
-    if args.ds not in DATASETS:
-        raise ValueError(
-            f"Unknown dataset '{args.ds}'. Choose one of: {list(DATASETS.keys())}"
-        )
+    if args.data:
+        YAML_PATH = args.data
+    elif args.ds in DATASETS:
+        YAML_PATH = DATASETS[args.ds]["yaml"]
+    else:
+        parser.error("Provide --data DATA_YAML or a valid --ds dataset shortcode")
 
-    YAML_PATH = DATASETS[args.ds]["yaml"]
-
-    print(f"Using dataset '{args.ds}'")
+    print(f"Using dataset '{args.ds if args.ds else 'custom YAML'}'")
     print(f"YAML        = {YAML_PATH}")
     print(f"Weights     = {args.weights}")
     print(f"Run name    = {args.name}")
