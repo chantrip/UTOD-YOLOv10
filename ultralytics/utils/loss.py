@@ -63,17 +63,22 @@ class FocalLoss(nn.Module):
 class BboxLoss(nn.Module):
     """Criterion class for computing training losses during training."""
 
-    def __init__(self, reg_max, use_dfl=False):
-        """Initialize the BboxLoss module with regularization maximum and DFL settings."""
+    def __init__(self, reg_max, use_dfl=False, box_loss="wiou"):
+        """Initialize regression loss; select 'ciou' or 'wiou' for controlled experiments."""
         super().__init__()
+        if box_loss not in ("ciou", "wiou"):
+            raise ValueError(f"Unsupported box_loss={box_loss!r}; expected 'ciou' or 'wiou'")
         self.reg_max = reg_max
         self.use_dfl = use_dfl
+        self.box_loss = box_loss
 
     def forward(self, pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask):
         """IoU loss."""
         weight = target_scores.sum(-1)[fg_mask].unsqueeze(-1)
-        iou = bbox_iou(pred_bboxes[fg_mask], target_bboxes[fg_mask], xywh=False, WIoU=True)
-        # loss_iou = ((1.0 - iou) * weight).sum() / target_scores_sum
+        iou = bbox_iou(
+            pred_bboxes[fg_mask], target_bboxes[fg_mask], xywh=False,
+            CIoU=self.box_loss == "ciou", WIoU=self.box_loss == "wiou",
+        )
 
         if type(iou) is tuple:
             if len(iou) == 2:
@@ -188,7 +193,11 @@ class v8DetectionLoss:
         self.use_dfl = m.reg_max > 1
 
         self.assigner = TaskAlignedAssigner(topk=tal_topk, num_classes=self.nc, alpha=0.5, beta=6.0)
-        self.bbox_loss = BboxLoss(m.reg_max - 1, use_dfl=self.use_dfl).to(device)
+        # The same explicit selection is used in YOLOv10's one-to-many and one-to-one branches.
+        self.bbox_loss = BboxLoss(
+            m.reg_max - 1, use_dfl=self.use_dfl,
+            box_loss=getattr(h, "box_loss", "wiou"),
+        ).to(device)
         self.proj = torch.arange(m.reg_max, dtype=torch.float, device=device)
 
     def preprocess(self, targets, batch_size, scale_tensor):
