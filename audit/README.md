@@ -58,10 +58,10 @@ Requires `PyYAML`. For regression tests, install `pytest` and a compatible CPU b
 5. Run data-free unit tests:
 
    ```bash
-   python -m pytest -q audit/tests/test_loss_selection.py audit/tests/test_prepare_dev_split.py audit/tests/test_architecture_factors.py
+   python -m pytest -q audit/tests
    ```
 
-   The regression-loss tests AST-load the actual source classes/functions without importing the entire Ultralytics package/DCNv4 CUDA extension. They check criterion selection for both YOLOv10 branches, numeric behavior, and that CIoU does not update WIoU running statistics. The partition tests use synthetic tiny image files to test deterministic generation, grouped sequences, and overlap checks. **These unit tests are not substitutes for a GPU end-to-end validation run.**
+   The regression-loss and fusion tests AST-load the actual source classes/functions without importing the entire Ultralytics package/DCNv4 CUDA extension. They check criterion selection for both YOLOv10 branches, numeric behavior, and that CIoU does not update WIoU running statistics. The partition tests use synthetic tiny image files to test deterministic generation, grouped sequences, and overlap checks. **These unit tests are not substitutes for a GPU end-to-end validation run.**
 
 ## Matched factorial ablations
 
