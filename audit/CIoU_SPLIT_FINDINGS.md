@@ -50,3 +50,45 @@ For **each dataset** and **each claimed baseline/ablation**, request:
 - **If data or time prevent independent re-evaluation:** state exactly what is validation-set performance, do not claim an untouched holdout, and avoid unsubstantiated benchmark generalization conclusions.
 
 **Next technical step:** Run a read-only image-manifest and duplicate-content audit against the real HPC dataset roots. Comparing names and SHA-256 hashes across splits can detect overlap, but **cannot by itself detect reuse of test labels for model selection**; the YAMLs plus training logs are essential.
+
+
+## Additional independent verification: five pairs of training scripts
+
+A direct line-by-line comparison of the **checked-in source at the audit base commit** finds that each paired baseline and WIoU training script invokes the **same detector configuration**, **same dataset**, **same train() hyperparameters**, and **same shared loss code**:
+
+| Paired scripts | Differences in checked-in source |
+|---|---|
+| `trash_m_baseline.py` / `trash_m_wiou.py` | Experiment `name` only |
+| `trash_i_baseline.py` / `trash_i_wiou.py` | Header comment and experiment `name` only |
+| `ruod_baseline.py` / `ruod_wiou.py` | Header comment and experiment `name` only |
+| `duo_baseline.py` / `duo_wiou.py` | Header comment and experiment `name` only |
+| `uodd_baseline.py` / `uodd_wiou.py` | Header comment and experiment `name` only |
+
+**Inference (conditional on same code revision and environment):** Replaying each pair from the current checked-in repository **does not isolate the CIoU-vs-WIoU variable**. All ten scripts would use the globally hardcoded WIoU loss. Running them can yield different output metrics because of randomness, but **not because the scripts explicitly select different localization losses**.
+
+This finding **does not establish which historical source snapshots were actually executed**. The TrashCan-Material baseline script already appeared in the Oct 20, 2025 history when CIoU was in force, whereas many other experiment scripts were only added to Git on April 7, 2026, after WIoU was checked in; local training versions might have differed. The thesis is dated April 2026 and does not identify commit versions for experiments.
+
+The one-factor WIoU ablation is central to the paper: manuscript Table 2 reports WIoU-only mAP@0.5 values 0.609 vs 0.577 on TrashCan-Material and 0.658 vs 0.615 on TrashCan-Instance. These are **reported experimental observations**, not validated reproduced improvements, until the code-era/experiment provenance is established.
+
+## Independent source cross-check on benchmark definitions
+
+- The [original DUO authors' repository](https://github.com/chongweiliu/DUO) explicitly says missing annotated test sets and inconsistent self-created test splits were problems the benchmark sought to address. Reusing DUO's annotated test partition for `best.pt` selection would undermine the independent benchmark comparison; it should be treated as a *development/selection set* if used that way.
+- [RUOD-R's documentation](https://github.com/RSSL-MTU/RUOD-R) states the original RUOD train/test image IDs and split definitions remain unchanged in the re-annotation. This confirms a recognized benchmark train/test distinction; it does not establish how the student's local files were constructed.
+
+## Verification of the read-only split checker
+
+The local Python implementation of `audit/verify_splits.py` was exercised with **three synthetic fixtures**, not the original datasets:
+
+1. Identical image bytes under different filenames across train and val were detected by SHA-256.
+2. A RUOD/DUO-style `val: images/test` mapping with no `test:` entry was flagged.
+3. Distinct-image train/val/test partitions yielded zero hash overlap.
+
+All three checks passed in the local test environment. **No real dataset counts, hash comparisons, loss-isolation reruns, or AP scores have been generated.** Note that hash comparison cannot detect visually duplicated-but-recompressed scenes, nor can it prove independence of model selection; run records remain essential.
+
+## Strongest achievable conclusion from the available public evidence
+
+- The present repository is **insufficient to independently reproduce the claimed CIoU-vs-WIoU baseline/ablation**.
+- The present code **would use an intended benchmark test directory for checkpoint selection** for both RUOD and DUO if the checked-in configs were used unchanged.
+- There is **not enough evidence to assert that the historical reported accuracy numbers are false**; old code, local patches, unpublished run settings, or differently defined file partitions remain possible.
+- No actual benchmark re-evaluation is possible from this repository alone because the required datasets and model checkpoints are not included.
+
