@@ -7,6 +7,8 @@ This directory is the independent audit workspace on **`chantrip/UTOD-YOLOv10:cv
 ## Findings and scope
 
 - [CIoU baseline / dataset split evidence](CIoU_SPLIT_FINDINGS.md) — checked-in loss selected WIoU; October 2025 history includes genuine CIoU. Five current baseline/WIoU script pairs do **not** select different losses. Actual historical run provenance is unknown.
+- [Manuscript source-to-code corrections](MANUSCRIPT_TRACEABILITY.md) — equation, metric, fusion, statistical, and deployment-claim traceability.
+- [Verified audit status](STATUS.md) — CI results and empirical blockers.
 - RUOD and DUO source YAMLs use `val: images/test` and the training loop selects `best.pt` using validation fitness. That is **not an independent test**, if training and reporting used the checked-in configuration.
 - [Source/checklist](CVC_AUDIT_PLAN.md) — original claims require traceability to run artifacts.
 - **No actual datasets or model checkpoints have been evaluated by this independent audit.** Numerical mAP claims remain unverified.
