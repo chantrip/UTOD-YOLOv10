@@ -13,6 +13,24 @@ This directory is the independent audit workspace on **`chantrip/UTOD-YOLOv10:cv
 - [Source/checklist](CVC_AUDIT_PLAN.md) — original claims require traceability to run artifacts.
 - **No actual datasets or model checkpoints have been evaluated by this independent audit.** Numerical mAP claims remain unverified.
 
+## Locate original HPC training artifacts
+
+If authorized to access Bidhan's HPC project account/storage, run:
+
+```bash
+python audit/find_artifacts.py --root /home/dsai-st125287/project/UTOD-YOLOv10
+
+# Optional metadata-only bundle for independent review:
+python audit/find_artifacts.py --root /home/dsai-st125287/project/UTOD-YOLOv10 \
+  --bundle /tmp/utod_run_metadata.zip
+```
+
+The locator prints every run that has an `args.yaml`, `results.csv`, or `weights/best.pt`/`last.pt`, including saved model/seed when recorded. The ZIP deliberately contains **only small run metadata and text logs**; it excludes `.pt` checkpoints, datasets, and images. Share the ZIP privately, not by committing it to the public fork.
+
+Expected examples from existing hardcoded paths are `runs/detect/ruod_bs_v2` and `runs/detect/ruod_dbw_v12`. Those paths were found in source code only, not verified on HPC.
+
+**Important:** Earlier runs did not explicitly record `box_loss`; absence of this key in an old `args.yaml` does not establish CIoU versus WIoU. The code snapshot and/or run log is still needed.
+
 ## Python tools (read original data; do not modify it)
 
 Requires `PyYAML`. For regression tests, install `pytest` and a compatible CPU build of `torch`. Full training requires the original project's PyTorch/CUDA/DCNv4 environment.
