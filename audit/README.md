@@ -15,14 +15,19 @@ This directory is the independent audit workspace on **`chantrip/UTOD-YOLOv10:cv
 
 ## Locate original HPC training artifacts
 
-If authorized to access Bidhan's HPC project account/storage, run:
+If authorized to access Bidhan's HPC project account/storage, make a **separate** checkout of this audit branch on your own account so the original student's working tree remains untouched:
 
 ```bash
-python audit/find_artifacts.py --root /home/dsai-st125287/project/UTOD-YOLOv10
+git clone --branch cvc-audit --single-branch \
+  https://github.com/chantrip/UTOD-YOLOv10.git ~/UTOD-YOLOv10-audit
 
-# Optional metadata-only bundle for independent review:
-python audit/find_artifacts.py --root /home/dsai-st125287/project/UTOD-YOLOv10 \
-  --bundle /tmp/utod_run_metadata.zip
+python ~/UTOD-YOLOv10-audit/audit/find_artifacts.py \
+  --root /home/dsai-st125287/project/UTOD-YOLOv10
+
+# Optional metadata-only ZIP for private review:
+python ~/UTOD-YOLOv10-audit/audit/find_artifacts.py \
+  --root /home/dsai-st125287/project/UTOD-YOLOv10 \
+  --bundle ~/utod_run_metadata.zip
 ```
 
 The locator prints every run that has an `args.yaml`, `results.csv`, or `weights/best.pt`/`last.pt`, including saved model/seed when recorded. The ZIP deliberately contains **only small run metadata and text logs**; it excludes `.pt` checkpoints, datasets, and images. Share the ZIP privately, not by committing it to the public fork.
